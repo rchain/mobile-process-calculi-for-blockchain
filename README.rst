@@ -34,7 +34,7 @@ Get source code
 
 Build and view html
 --------------------------------------------------------------------------------
-* In a terminal window, go to your homestead-guide directory.
+* In a terminal window, go to the cloned directory.
 * ``make html``
 * ``cd build/html``
 * ``open index.html`` (open in web browser)

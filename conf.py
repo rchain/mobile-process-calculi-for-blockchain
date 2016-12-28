@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Mobile process calculi for programming the blockchain'
-copyright = u'2016, David Currin, Joseph Denman, Ed Eykholt, Lucius Gregory Meredith'
+copyright = u'2016, RChain Co-op'
 author = u'David Currin, Joseph Denman, Ed Eykholt, Lucius Gregory Meredith'
 
 # The version info for the project you're documenting, acts as replacement for
