@@ -55,56 +55,131 @@ Processes that need data can look for it in tuple space using pattern matching.
 
 This raises questions about how  publication of data is persisted and what happens
 to computations suspended waiting on key-value pairs that are not present in the
-Tuplespace. Moreover, the Tuplespace mechanism makes no commitment to any programming
-model. Agents using the Tuplespace may be written in a wide variety of programming
+tuplespace. Moreover, the tuplespace mechanism makes no commitment to any programming
+model. Agents using the tuplespace may be written in a wide variety of programming
 models with a wide variety of implementations and interpretations of the agreed
 concurrency semantics. This makes reasoning about the end-to-end semantics of an
-application made of many agents interacting through the Tuplespace much, much harder.
+application made of many agents interacting through the tuplespace much, much harder.
 However, the simplicity of the communication and coordination model has enjoyed wide
-appeal and there were many implementations of the Tuplespace idea over the ensuing decades.
+appeal and there were many implementations of the tuplespace idea over the ensuing decades.
 
-A notable difference between the Tuplespace notion of coordination and the actor model lies in the principal port limitation of actors. An actor has one place, its mailbox, where it is listening to the rest of the world. Real systems and real system development require that applications often listen to two or more data sources and coordinate across them. Fork-join decision procedures, for example, where requests for information are spawned to multiple data sources and then the subsequent computation represents a join of the resulting information streams from the autonomous data sources, are quite standard in human decision making processes, from loan processing, to the review of academic papers. Of course it is possible to arrange to have an actor that coordinates amongst multiple actors who are then charged with handling the independent data sources. This introduces application overhead and breaks encapsulation as the actors need to be aware they are coordinating.
+A notable difference between the tuplespace notion of coordination and the actor model lies in the principal port limitation of actors. An actor has one place, its mailbox, where it is listening to the rest of the world. Real systems and real system development require that applications often listen to two or more data sources and coordinate across them. Fork-join decision procedures, for example, where requests for information are spawned to multiple data sources and then the subsequent computation represents a join of the resulting information streams from the autonomous data sources, are quite standard in human decision making processes, from loan processing, to the review of academic papers. Of course it is possible to arrange to have an actor that coordinates amongst multiple actors who are then charged with handling the independent data sources. This introduces application overhead and breaks encapsulation as the actors need to be aware they are coordinating.
 
-In contrast, the Tuplespace model is well suited to computations that coordinate across multiple autonomous data sources.
+In contrast, the tuplespace model is well suited to computations that coordinate across multiple autonomous data sources.
 
 Distributed implementations of mobile process calculi
 ===============================================================================
 
-Tomlinson, Lavender, and Meredith, among others, provided a realization of the Tuplespace model inside Rosette/ESS as a means to investigate the two models side-by-side and compare applications written in both styles. It was during this work that Meredith began an intensive investigation of the mobile process calculi as yet a third alternative to the actor model and the Tuplespace model. One of the primary desiderata was to bridge between having a uniform programming model, such as the actor model of Rosette, making reasoning about application semantics much easier, with the simple, yet flexible notion of communication and coordination afforded in the Tuplespace model.
+Tomlinson, Lavender, and Meredith, among others, provided a realization of the tuplespace model inside Rosette/ESS as a means to investigate the two models side-by-side and compare applications written in both styles. It was during this work that Meredith began an intensive investigation of the mobile process calculi as yet a third alternative to the actor model and the tuplespace model. One of the primary desiderata was to bridge between having a uniform programming model, such as the actor model of Rosette, making reasoning about application semantics much easier, with the simple, yet flexible notion of communication and coordination afforded in the tuplespace model.
 
-.. todo::
-
-  The code example in the Tuplespaces section includes ideas which are developed later and feels like a bit of a leap so early in the text. I wonder if it would be useful to instead provide the reader with a brief description of Linda with some `in(...)`, `out(...)`, `rd(...)` examples to better set the scene in terms of interacting with the tuplespace as a live data structure. A discussion of how Rosette can be used to implement Linda can then be set in a bit more context and a description of the SpecialK consumer and producer verbs would flow on nicely. The code example, the SpecialK DSL implemented in Rosette is then the final proof which ties all this together.
+In the code depicted below the method names consume and produce are used instead of the traditional Linda verbs :code:`in` and :code:`out`. The reason is that once reflective method strategy was discovered, and then refined using delimited continuations, this lead to new vital observations relating to the life cycle of the data and continuation.
 
 .. code-block:: none
+   :caption: A Rosette implementation of the tuplespace get semantics
 
-  (defRMethod NameSpace (consume ctxt & location)
-    (letrec [
-      [[channel ptrn] location]
-      [subspace (tbl-get chart channel)]
-      [candidates (names subspace)]
-      [[extractions remainder]
-        (fold [e acc k]
-          (let [[[hits misses] acc] [binding (match? ptrn e)]]
-               (if (miss? binding)
-                 (k [hits [e & misses]])
-                 (k [[[e binding] & hits] misses]))))]
-      [[productions consummation]
-        (fold extractions
-          (proc [[e binding] acc k]
-            (let [[[productions consumers] acc] [hit (tbl-get subspace e)]]
-                 (if (production? hit)
-                   (k [[[[e binding] hit] & productions] consumers])
-                   (k [productions [[e hit] & consumers]])))))]]
+    (defRMethod NameSpace (consume ctxt & location)
+      (letrec [
+        [[channel ptrn] location]
+        [subspace (tbl-get chart channel)]
+        [candidates (names subspace)]
+        [[extractions remainder]
+          (fold [e acc k]
+            (let [[[hits misses] acc] [binding (match? ptrn e)]]
+                 (if (miss? binding)
+                   (k [hits [e & misses]])
+                   (k [[[e binding] & hits] misses]))))]
+        [[productions consummation]
+          (fold extractions
+            (proc [[e binding] acc k]
+              (let [[[productions consumers] acc] [hit (tbl-get subspace e)]]
+                   (if (production? hit)
+                     (k [[[[e binding] hit] & productions] consumers])
+                     (k [productions [[e hit] & consumers]])))))]]
 
-      (map productions (proc [[[ptrn binding] product]] (delete subspace ptrn)))
-      (map consummation (proc [[ptrn consumers]] (tbl-add subspace ptrn (reverse [ctxt & (reverse consumers)]))))
-      (update!)
-      (ctxt-rtn ctxt productions)))
+        (map productions (proc [[[ptrn binding] product]] (delete subspace ptrn)))
+        (map consummation (proc [[ptrn consumers]] (tbl-add subspace ptrn (reverse [ctxt & (reverse consumers)]))))
+        (update!)
+        (ctxt-rtn ctxt productions)))
 
-Building on Tomlinson’s insights about the use of Rosette’s reflective methods to model the Tuplespace semantics (see code above), Meredith provided a direct encoding of the π-calculus into Tuplespace semantics via linear continuations. This semantics was at the heart of Microsoft’s BizTalk Process Orchestration Engine, and Microsoft’s XLang, arguably the first Internet scale smart contracting language, was the resulting programming model. This model was a direct influence on W3C standards, such as BEPL and WS-Choreography, and spawned a whole generation of business process automation applications and frameworks.
+.. code-block:: none
+   :caption: A Rosette implementation of the tuplespace put semantics
 
-As with the refinements Rosette brings to the actor model, the π-calculus brings a specific ontology for applications built on the notion of processes that communicate via message passing over channels. It is important to note that the notion of process is parametric in a notion of channel, and Meredith used this level of abstraction to provide a wide variety of channel types in XLang, including bindings to Microsoft’s MSMQ message queues, COM objects, and many other access points in popular technologies of the time. Perhaps most central to today’s Internet abstractions is that URIs provide a natural notion of channel that allows for a realization of the programming model over URI aware communications protocols, such as http. Likewise, in terms of today’s storage climate, keys in a key-value store, such as a nosql database also map directly to the notion of channel in the π-calculus, and Meredith used this very idea to provide the encoding of the π-calculus into Tuplespace semantics.
+    (defRMethod NameSpace (produce ctxt & production)
+     (letrec [[[channel ptrn product] production]
+            [subspace (tbl-get chart channel)]
+           [candidates (names subspace)]
+           [[extractions remainder]
+              (fold [e acc k]
+                  (let [[[hits misses] acc]
+                  [binding (match? ptrn e)]]
+              (if (miss? binding)
+                  (k [[e & hits] misses])
+                  (k [hits [e & misses]]))))]
+           [[productions consummation]
+                (fold extractions
+                  (proc [[e binding] acc k]
+                    (let [[[productions consumers] acc]
+                   [hit (tbl-get subspace e)]]
+                      (if (production? hit)
+                   (k [[[e hit] & productions] consumers])
+                   (k [productions [[[e binding] hit] & consumers]])))))]]
+       (map productions
+         (proc [[ptrn prod]] (tbl-add subspace ptrn product)))
+       (map consummation
+         (proc [[[ptrn binding] consumers]]
+            (delete subspace ptrn)
+            (map proc [consumer] (send ctxt-rtn consumer [product binding]))))
+       (update!)
+       (ctxt-rtn ctxt #niv)))
+
+
+Essentially, the question is what happens to either or both of data and continuation after an input request meets an output request. In traditional tuplespace and π-calculus semantics both data and continuation are removed from the store. However, it is perfectly possible to leave either or both of them in the store after the event. Each independent choice leads to a different major programming paradigm.
+
+Removing the continuation but leaving the data constitutes a standard database read
+
+.. table:: Traditional DB operations
+
+   +----------+------------------+-------------------+------------------+----------------------+
+   |          | ephemeral - data | persistent - data | ephemeral - data | persistent - data    |
+   |          |                  |                   |                  |                      |
+   |          | ephemeral - k    | ephemeral - k     | persistent - k   | ephemeral - k        |
+   +----------+------------------+-------------------+------------------+----------------------+
+   | producer | put              | **store**         | publish          | publish with history |
+   +----------+------------------+-------------------+------------------+----------------------+
+   | consumer | get              | **read**          | subscribe        | subscribe            |
+   +----------+------------------+-------------------+------------------+----------------------+
+
+Removing the data, but leaving the continuation constitutes a subscription in a pub/sub model:
+
+.. table:: Traditional messaging operations
+
+   +----------+------------------+-------------------+------------------+--------------------------+
+   |          | ephemeral - data | persistent - data | ephemeral - data | persistent - data        |
+   |          |                  |                   |                  |                          |
+   |          | ephemeral - k    | ephemeral - k     | persistent - k   | ephemeral - k            |
+   +----------+------------------+-------------------+------------------+--------------------------+
+   | producer | put              | store             | **publish**      | **publish with history** |
+   +----------+------------------+-------------------+------------------+--------------------------+
+   | consumer | get              | read              | **subscribe**    | **subscribe**            |
+   +----------+------------------+-------------------+------------------+--------------------------+
+
+Removing them both is the standard mobile process calculi and tuplespace semantics:
+
+.. table:: We use these for item-level locking in a distributed setting
+
+   +----------+------------------+-------------------+------------------+----------------------+
+   |          | ephemeral - data | persistent - data | ephemeral - data | persistent - data    |
+   |          |                  |                   |                  |                      |
+   |          | ephemeral - k    | ephemeral - k     | persistent - k   | ephemeral - k        |
+   +----------+------------------+-------------------+------------------+----------------------+
+   | producer | **put**          | store             | publish          | publish with history |
+   +----------+------------------+-------------------+------------------+----------------------+
+   | consumer | **get**          | read              | subscribe        | subscribe            |
+   +----------+------------------+-------------------+------------------+----------------------+
+
+Building on Tomlinson’s insights about the use of Rosette’s reflective methods to model the tuplespace semantics (see code above), Meredith provided a direct encoding of the π-calculus into tuplespace semantics via linear continuations. This semantics was at the heart of Microsoft’s BizTalk Process Orchestration Engine, and Microsoft’s XLang, arguably the first Internet scale smart contracting language, was the resulting programming model. This model was a direct influence on W3C standards, such as BEPL and WS-Choreography, and spawned a whole generation of business process automation applications and frameworks.
+
+As with the refinements Rosette brings to the actor model, the π-calculus brings a specific ontology for applications built on the notion of processes that communicate via message passing over channels. It is important to note that the notion of process is parametric in a notion of channel, and Meredith used this level of abstraction to provide a wide variety of channel types in XLang, including bindings to Microsoft’s MSMQ message queues, COM objects, and many other access points in popular technologies of the time. Perhaps most central to today’s Internet abstractions is that URIs provide a natural notion of channel that allows for a realization of the programming model over URI aware communications protocols, such as http. Likewise, in terms of today’s storage climate, keys in a key-value store, such as a nosql database also map directly to the notion of channel in the π-calculus, and Meredith used this very idea to provide the encoding of the π-calculus into tuplespace semantics.
 
 From Tuplespaces to π-calculus
 -------------------------------------------------------------------------------
