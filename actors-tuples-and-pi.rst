@@ -127,7 +127,25 @@ This refactoring shows up in Meredith and Stay’s work on higher categorical se
 
   for( ptrn_{1} \leftarrow x_{1}; \dotso; ptrn_{n} \leftarrow x_{n} if cond )P
 
-Using a for-comprehension allows the input guard semantics to be parametric in the monad used for channels, and hence the particular join semantics can be supplied polymorphically. The significance of this cannot be overemphasized. Three examples are immediate. Firstly, it contrasts with the join-calculus where the join is inseparably bound together with recursion. The monadic input guard allows for anonymous, one time joins, which are quite standard in fork-join patterns in human decision processes. Secondly, it provides the proper setting in which to interpret Kiselyov’s LogicT monad transformer. Searching down each input source until a tuple of inputs that satisfies the conditions is found is sensitive to divergence in each input source. Fair interleaving, and more importantly, a means to programmatically describe interleaving policy is critical for reliable, available, and performant services. This is the actual import of LogicT and the right setting in which to deploy that machinery. Finally, now we have a syntactic form for nested transactions. Specifically, P can only run in a context in which all of the state changes associated with the input sources and the condition are met. Further, P can be yet another input-guarded process. Thus a programmer, or a program analyzer, can detect transaction boundaries *syntactically*. This is vital for contracts involving financial and other mission-critical transactions.
+Using a for-comprehension allows the input guard semantics to be parametric in the monad used for channels, and hence the particular join semantics can be supplied polymorphically. The significance of this cannot be overemphasized. Specifically:
+
+* It contrasts with the join-calculus where the join is inseparably
+  bound together with recursion. The monadic input guard allows for anonymous,
+  one time joins, which are quite standard in fork-join patterns in human
+  decision processes.
+* It provides the proper setting in which to interpret Kiselyov’s
+  LogicT monad transformer. Searching down each input source until a tuple of
+  inputs that satisfies the conditions is found is sensitive to divergence in
+  each input source. Fair interleaving, and more importantly, a means to
+  programmatically describe interleaving policy is critical for reliable,
+  available, and performant services. This is the actual import of LogicT
+  and the right setting in which to deploy that machinery.
+* We now have a syntactic form for nested transactions. Specifically,
+  :code:`P` can only run in a context in which all of the state changes associated
+  with the input sources and the condition are met. Further, :code:`P` can be
+  yet another input-guarded process. Thus a programmer, or a program analyzer,
+  can detect transaction boundaries *syntactically*. This is vital for contracts
+  involving financial and other mission-critical transactions.
 
 A pre-RChain model for smart contracts
 -------------------------------------------------------------------------------
