@@ -121,7 +121,7 @@ monad. The success of this interpretation suggests a refactoring of the
             | (def X(ptrn) = P)[m]
             | X(ptrn)
 
-This refactoring shows up in Meredith and Stay’s work on higher categorical semantics for the π-calculus, and is then later incorporated in the rholang design. The important point to note is that the for-comprehension-based input can now be smoothly extended to input from multiple sources, each/all of which must pass a filter, before the continuation is invoked.
+This refactoring shows up in Meredith and Stay’s work on higher categorical semantics for the π-calculus :cite:`DBLP:journals/corr/StayM15`, and is then later incorporated in the rholang design. The important point to note is that the for-comprehension-based input can now be smoothly extended to input from multiple sources, each/all of which must pass a filter, before the continuation is invoked.
 
 .. math::
 
@@ -256,3 +256,6 @@ Now we have a complete characterization of the RChain model of smart contracts. 
 * this dictates a clear compilation strategy as a series of correct-by-construction transforms to the byte code for a VM that has been field test for 20 years
 
 Now compare this starting point to Ethereum’s current point with Solidity and the EVM. If the goal is to produce a believable timeline over which we reach a network of blockchain nodes running formally verified, correct-by-construction code, then even with Ethereum’s network effect this approach has distinct advantages. Clearly, there is enough market interest to support the development of both options.
+
+.. bibliography:: references.bib
+   :cited:
