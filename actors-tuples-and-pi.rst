@@ -77,67 +77,104 @@ In the code depicted below the method names consume and produce are used instead
 .. code-block:: none
    :caption: A Rosette implementation of the tuplespace get semantics
 
-    (defRMethod NameSpace (consume ctxt & location)
-      (letrec [
-        [[channel ptrn] location]
-        [subspace (tbl-get chart channel)]
-        [candidates (names subspace)]
-        [[extractions remainder]
-          (fold [e acc k]
-            (let [[[hits misses] acc] [binding (match? ptrn e)]]
-                 (if (miss? binding)
+   (defRMethod NameSpace (consume ctxt & location)
+    ;;; by makng this a reflective method - RMethod - we gain access to the awaiting continuation
+    ;;; bound to the formal parameter ctxt
+    (letrec [[[channel ptrn] location]
+                   ;;; the channel and the pattern of incoming messages to look for are destructured and bound
+           [subspace (tbl-get chart channel)]
+                   ;;; the incoming messages associated with the channel are collected in a subtable
+                   ;;; in this sense we can see that the semantic framework supports a compositional
+                   ;;; topic/subtopic/subsubtopic/… structuring technique that unifies message passing
+                   ;;; with content delivery primitives
+                   ;;; the channel name becomes the topic, and the pattern structure becomes
+                   ;;; the subtopic tree
+                   ;;; this also unifies with the URL view of resource access
+          [candidates (names subspace)]
+          [[extractions remainder]
+             (fold candidates
+               (proc [e acc k]
+                   (let [[[hits misses] acc]
+                   [binding (match? ptrn e)]]
+               (if (miss? binding)
                    (k [hits [e & misses]])
-                   (k [[[e binding] & hits] misses]))))]
-        [[productions consummation]
-          (fold extractions
-            (proc [[e binding] acc k]
-              (let [[[productions consumers] acc] [hit (tbl-get subspace e)]]
-                   (if (production? hit)
-                     (k [[[[e binding] hit] & productions] consumers])
-                     (k [productions [[e hit] & consumers]])))))]]
+                   (k [[[e binding] & hits] misses])))))]
+                     ;;; note that this is generic in the match? and miss? predicates
+                     ;;; matching could be unification (as it is in SpecialK) or it could be
+                     ;;; a number of other special purpose protocols
+                     ;;; the price for this genericity is performance
+                     ;;; there is decent research showing that there are hashing disciplines
+                     ;;; that could provide a better than reasonable approximation of unification
+          [[productions consummation]
+               (fold extractions
+                 (proc [[e binding] acc k]
+                   (let [[[productions consumers] acc]
+                  [hit (tbl-get subspace e)]]
+                     (if (production? hit)
+                  (k [[[[e binding] hit] & productions] consumers])
+                  (k [productions [[e hit] & consumers]])))))]]
+                     ;;; this divides the hits into those matches that are data and
+                     ;;; those matches that are continuations
+                     ;;; and the rest of the code sends data to the awaiting continuation
+                     ;;; and appends the continuation to those matches that are currently
+                     ;;; data starved
+                     ;;; this is a much more fine-grained view of excluded middle
 
-        (map productions (proc [[[ptrn binding] product]] (delete subspace ptrn)))
-        (map consummation (proc [[ptrn consumers]] (tbl-add subspace ptrn (reverse [ctxt & (reverse consumers)]))))
+      (seq
+        (map productions
+          (proc [[[ptrn binding] product]]
+               (delete subspace ptrn)))
+        (map consummation
+             (proc [[ptrn consumers]]
+               (tbl-add subspace
+               ptrn (reverse [ctxt & (reverse consumers)]))))
         (update!)
-        (ctxt-rtn ctxt productions)))
+        (ctxt-rtn ctxt productions))))
 
 .. code-block:: none
    :caption: A Rosette implementation of the tuplespace put semantics
 
-    (defRMethod NameSpace (produce ctxt & production)
-     (letrec [[[channel ptrn product] production]
-            [subspace (tbl-get chart channel)]
-           [candidates (names subspace)]
-           [[extractions remainder]
-              (fold [e acc k]
-                  (let [[[hits misses] acc]
-                  [binding (match? ptrn e)]]
-              (if (miss? binding)
-                  (k [[e & hits] misses])
-                  (k [hits [e & misses]]))))]
-           [[productions consummation]
-                (fold extractions
-                  (proc [[e binding] acc k]
-                    (let [[[productions consumers] acc]
-                   [hit (tbl-get subspace e)]]
-                      (if (production? hit)
-                   (k [[[e hit] & productions] consumers])
-                   (k [productions [[[e binding] hit] & consumers]])))))]]
-       (map productions
-         (proc [[ptrn prod]] (tbl-add subspace ptrn product)))
-       (map consummation
-         (proc [[[ptrn binding] consumers]]
-            (delete subspace ptrn)
-            (map proc [consumer] (send ctxt-rtn consumer [product binding]))))
-       (update!)
-       (ctxt-rtn ctxt #niv)))
-
+   ;;; This code is perfectly dual to the consumer code and so all the comments
+   ;;; there apply in the corresponging code sites
+   (defRMethod NameSpace (produce ctxt & production)
+    (letrec [[[channel ptrn product] production]
+           [subspace (tbl-get chart channel)]
+          [candidates (names subspace)]
+          [[extractions remainder]
+             (fold candidates
+               (proc [e acc k]
+                   (let [[[hits misses] acc]
+                   [binding (match? ptrn e)]]
+               (if (miss? binding)
+                   (k [[e & hits] misses])
+                   (k [hits [e & misses]])))))]
+          [[productions consummation]
+               (fold extractions
+                 (proc [[e binding] acc k]
+                   (let [[[productions consumers] acc]
+                  [hit (tbl-get subspace e)]]
+                     (if (production? hit)
+                  (k [[[e hit] & productions] consumers])
+                  (k [productions [[[e binding] hit] & consumers]])))))]]
+      (seq
+        (map productions
+          (proc [[ptrn prod]] (tbl-add subspace ptrn product)))
+        (map consummation
+          (proc [[[ptrn binding] consumers]]
+          (seq
+               (delete subspace ptrn)
+               (map consumers
+                 (proc [consumer]
+                   (send ctxt-rtn consumer [product binding])
+                   binding)))))
+        (update!)
+        (ctxt-rtn ctxt product))))
 
 Essentially, the question is what happens to either or both of data and continuation after an input request meets an output request. In traditional tuplespace and π-calculus semantics both data and continuation are removed from the store. However, it is perfectly possible to leave either or both of them in the store after the event. Each independent choice leads to a different major programming paradigm.
 
-Removing the continuation but leaving the data constitutes a standard database read
+.. topic:: Traditional DB operations
 
-.. table:: Traditional DB operations
+   Removing the continuation but leaving the data constitutes a standard database read:
 
    +----------+------------------+-------------------+------------------+----------------------+
    |          | ephemeral - data | persistent - data | ephemeral - data | persistent - data    |
@@ -149,9 +186,10 @@ Removing the continuation but leaving the data constitutes a standard database r
    | consumer | get              | **read**          | subscribe        | subscribe            |
    +----------+------------------+-------------------+------------------+----------------------+
 
-Removing the data, but leaving the continuation constitutes a subscription in a pub/sub model:
 
-.. table:: Traditional messaging operations
+.. topic:: Traditional messaging operations
+
+   Removing the data, but leaving the continuation constitutes a subscription in a pub/sub model:
 
    +----------+------------------+-------------------+------------------+--------------------------+
    |          | ephemeral - data | persistent - data | ephemeral - data | persistent - data        |
@@ -163,9 +201,9 @@ Removing the data, but leaving the continuation constitutes a subscription in a 
    | consumer | get              | read              | **subscribe**    | **subscribe**            |
    +----------+------------------+-------------------+------------------+--------------------------+
 
-Removing them both is the standard mobile process calculi and tuplespace semantics:
+.. topic:: Item-level locking in a distributed setting
 
-.. table:: We use these for item-level locking in a distributed setting
+   Removing both data and continuation is the standard mobile process calculi and tuplespace semantics:
 
    +----------+------------------+-------------------+------------------+----------------------+
    |          | ephemeral - data | persistent - data | ephemeral - data | persistent - data    |
