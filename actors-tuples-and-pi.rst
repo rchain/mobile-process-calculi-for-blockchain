@@ -29,20 +29,78 @@ To close out this brief summary note that Rosette was not merely structurally an
 Tuplespaces
 ===============================================================================
 
-Around the same time as the Rosette model was being investigated for developing applications in this decentralized and distributed setting, Gelernter proposed Tuplespaces. Here the idea is to create a logical repository above the physical and communications layers of the Internet. The repository is essentially organized as a distributed key-value database in which the key-value pairs are used as communication and coordination mechanisms between computations. A computational agent (or simply agent for short) can publish data by publishing a key-value pair to the Tuplespace, and it can read data by consuming a key-value pair from the Tuplespace. This leaves open the question of whether publication of data is persisted and what happens to computations suspended waiting on key-value pairs that are not present in the Tuplespace.
+Around the same time as the Rosette model was being investigated for developing
+applications in this decentralized and distributed setting, Gelernter proposed
+Tuplespaces. Here the idea is to create a logical repository above the physical
+and communications layers of the Internet. The repository is essentially
+organized as a distributed key-value database in which the key-value pairs are
+used as communication and coordination mechanisms between computations. Gelernter
+describes three basic operations for interaction with the tuplespace, :code:`out`
+to create a new data object in tuplespace, :code:`in` to consume (remove) an
+object from tuple space and :code:`rd` to read an object without removing it
 
-Moreover, the Tuplespace mechanism makes no commitment to any programming model. Agents using the Tuplespace may be written in a wide variety of programming models with a wide variety of implementations and interpretations of the agreed concurrency semantics. This makes reasoning about the end-to-end semantics of an application made of many agents interacting through the Tuplespace much, much harder. However, the simplicity of the communication and coordination model has enjoyed wide appeal and there were many implementations of the Tuplespace idea over the ensuing decades.
+In contrast to message passing systems this approach allows senders and receivers to
+operate without any knowledge of each other. When a process generates a new result
+that other processes will need, it simply dumps the new data into tuplespace.
+Processes that need data can look for it in tuple space using pattern matching.
 
-A notable difference between the Tuplespace notion of coordination and the actor model lies in the principal port limitation of actors. An actor has one place, its mailbox, where it is listening to the rest of the world. Real systems and real system development require that applications often listen to two or more data sources and coordinate across them. Fork-join decision procedures, for example, where requests for information are spawned to multiple data sources and then the subsequent computation represents a join of the resulting information streams from the autonomous data sources, are quite standard in human decision making processes, from loan processing, to the review of academic papers. Of course it is possible to arrange to have an actor that coordinates amongst multiple actors who are then charged with handling the independent data sources. This introduces application overhead and breaks encapsulation as the actors need to be aware they are coordinating. In contrast, the Tuplespace model is well suited to computations that coordinate across multiple autonomous data sources.
 
-.. todo::
+.. code-block:: lisp
 
-  The code example in the Tuplespaces section includes ideas which are developed later and feels like a bit of a leap so early in the text. I wonder if it would be useful to instead provide the reader with a brief description of Linda with some `in(...)`, `out(...)`, `rd(...)` examples to better set the scene in terms of interacting with the tuplespace as a live data structure. A discussion of how Rosette can be used to implement Linda can then be set in a bit more context and a description of the SpecialK consumer and producer verbs would flow on nicely. The code example, the SpecialK DSL implemented in Rosette is then the final proof which ties all this together.
+   out("job", 999, "abc")
+
+   in("job", 1000, ?x) ; blocks because there is no matching tuple
+   in("job", 999, x:string) ; takes that tuple out of tuple space, assigning 'abc' to x
+
+
+This raises questions about how  publication of data is persisted and what happens
+to computations suspended waiting on key-value pairs that are not present in the
+Tuplespace. Moreover, the Tuplespace mechanism makes no commitment to any programming
+model. Agents using the Tuplespace may be written in a wide variety of programming
+models with a wide variety of implementations and interpretations of the agreed
+concurrency semantics. This makes reasoning about the end-to-end semantics of an
+application made of many agents interacting through the Tuplespace much, much harder.
+However, the simplicity of the communication and coordination model has enjoyed wide
+appeal and there were many implementations of the Tuplespace idea over the ensuing decades.
+
+A notable difference between the Tuplespace notion of coordination and the actor model lies in the principal port limitation of actors. An actor has one place, its mailbox, where it is listening to the rest of the world. Real systems and real system development require that applications often listen to two or more data sources and coordinate across them. Fork-join decision procedures, for example, where requests for information are spawned to multiple data sources and then the subsequent computation represents a join of the resulting information streams from the autonomous data sources, are quite standard in human decision making processes, from loan processing, to the review of academic papers. Of course it is possible to arrange to have an actor that coordinates amongst multiple actors who are then charged with handling the independent data sources. This introduces application overhead and breaks encapsulation as the actors need to be aware they are coordinating.
+
+In contrast, the Tuplespace model is well suited to computations that coordinate across multiple autonomous data sources.
 
 Distributed implementations of mobile process calculi
 ===============================================================================
 
 Tomlinson, Lavender, and Meredith, among others, provided a realization of the Tuplespace model inside Rosette/ESS as a means to investigate the two models side-by-side and compare applications written in both styles. It was during this work that Meredith began an intensive investigation of the mobile process calculi as yet a third alternative to the actor model and the Tuplespace model. One of the primary desiderata was to bridge between having a uniform programming model, such as the actor model of Rosette, making reasoning about application semantics much easier, with the simple, yet flexible notion of communication and coordination afforded in the Tuplespace model.
+
+.. todo::
+
+  The code example in the Tuplespaces section includes ideas which are developed later and feels like a bit of a leap so early in the text. I wonder if it would be useful to instead provide the reader with a brief description of Linda with some `in(...)`, `out(...)`, `rd(...)` examples to better set the scene in terms of interacting with the tuplespace as a live data structure. A discussion of how Rosette can be used to implement Linda can then be set in a bit more context and a description of the SpecialK consumer and producer verbs would flow on nicely. The code example, the SpecialK DSL implemented in Rosette is then the final proof which ties all this together.
+
+.. code-block:: none
+
+  (defRMethod NameSpace (consume ctxt & location)
+    (letrec [
+      [[channel ptrn] location]
+      [subspace (tbl-get chart channel)]
+      [candidates (names subspace)]
+      [[extractions remainder]
+        (fold [e acc k]
+          (let [[[hits misses] acc] [binding (match? ptrn e)]]
+               (if (miss? binding)
+                 (k [hits [e & misses]])
+                 (k [[[e binding] & hits] misses]))))]
+      [[productions consummation]
+        (fold extractions
+          (proc [[e binding] acc k]
+            (let [[[productions consumers] acc] [hit (tbl-get subspace e)]]
+                 (if (production? hit)
+                   (k [[[[e binding] hit] & productions] consumers])
+                   (k [productions [[e hit] & consumers]])))))]]
+
+      (map productions (proc [[[ptrn binding] product]] (delete subspace ptrn)))
+      (map consummation (proc [[ptrn consumers]] (tbl-add subspace ptrn (reverse [ctxt & (reverse consumers)]))))
+      (update!)
+      (ctxt-rtn ctxt productions)))
 
 Building on Tomlinson’s insights about the use of Rosette’s reflective methods to model the Tuplespace semantics (see code above), Meredith provided a direct encoding of the π-calculus into Tuplespace semantics via linear continuations. This semantics was at the heart of Microsoft’s BizTalk Process Orchestration Engine, and Microsoft’s XLang, arguably the first Internet scale smart contracting language, was the resulting programming model. This model was a direct influence on W3C standards, such as BEPL and WS-Choreography, and spawned a whole generation of business process automation applications and frameworks.
 
