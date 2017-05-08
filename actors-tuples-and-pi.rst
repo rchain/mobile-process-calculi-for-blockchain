@@ -243,7 +243,7 @@ These basic forms can be interpreted in terms of the operations on Tuplespaces::
      0                       { }
      | x?(prtn)P             { val ptrn = T.get([[x]](T)); [[T]](P) }
      | x!(m)                 T.put([[x]], m)
-     | P|Q                   spawn{ [[P]](T)  }; spawn{ [[P]](T) }
+     | P|Q                   spawn{ [[P]](T)  }; spawn{ [[Q]](T) }
      | (new x)P              { val x = T.fresh("x"); [[P]](T) }
      | (def X(ptrn) = P)(m)  object X { def apply(ptrn) = { [[P]](T) } }; X(m)
      | X(ptrn)               X(ptrn)
@@ -272,7 +272,7 @@ If we look at this from the perspective of programming language evolution, we fi
        0                       { }
        | x?(prtn)P             for( ptrn <- [[x]](T) ){ [[P]](T) }
        | x!(m)                 T.put([[x]], m)
-       | P|Q                   spawn{ [[P]](T)  }; spawn{ [[P]](T) }
+       | P|Q                   spawn{ [[P]](T)  }; spawn{ [[Q]](T) }
        | (new x)P              { val x = T.fresh("x"); [[P]](T) }
        | (def X(ptrn) = P)(m)  object X { def apply(ptrn) = { [[P]](T) } }; X(m)
        | X(ptrn)               X(ptrn)
