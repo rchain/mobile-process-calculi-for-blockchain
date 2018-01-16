@@ -1,0 +1,114 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2016, RChain Co-op
+# This file is distributed under the same license as the Mobile process
+# calculi for programming the blockchain package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mobile process calculi for programming the blockchain"
+" 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-01-16 22:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
+
+#: ../../README.rst:3
+msgid "Mobile process calculi for programming the blockchain"
+msgstr ""
+
+#: ../../README.rst:5
+msgid ""
+"This document provides extra background and serves as a companion to the "
+"RChain-Architecture documentation"
+msgstr ""
+
+#: ../../README.rst:10
+msgid "GETTING STARTED"
+msgstr ""
+
+#: ../../README.rst:12
+msgid ""
+"This project uses Sphinx (http://www.sphinx-doc.org/en/stable/index.html)"
+" to build html that is published to Read the Docs. To run this "
+"documentation on your computer, you should do the following:"
+msgstr ""
+
+#: ../../README.rst:17
+msgid "Prerequisites"
+msgstr ""
+
+#: ../../README.rst:18
+msgid "Python 2.6 or later"
+msgstr ""
+
+#: ../../README.rst:19
+msgid "git"
+msgstr ""
+
+#: ../../README.rst:22
+msgid "Install Sphinx, etc"
+msgstr ""
+
+#: ../../README.rst:23
+msgid ""
+"For OSX/Linux users (based on instructions here: https://read-the-"
+"docs.readthedocs.org/en/latest/getting_started.html)"
+msgstr ""
+
+#: ../../README.rst:25
+msgid "From command line: ``sudo pip install sphinx``"
+msgstr ""
+
+#: ../../README.rst:27
+msgid "For Windows users:"
+msgstr ""
+
+#: ../../README.rst:29
+msgid ""
+"http://www.sphinx-doc.org/en/stable/install.html#windows-install-python-"
+"and-sphinx"
+msgstr ""
+
+#: ../../README.rst:32
+msgid "Get source code"
+msgstr ""
+
+#: ../../README.rst:33
+msgid ""
+"git clone: https://github.com/rchain/mobile-process-calculi-for-"
+"blockchain.git"
+msgstr ""
+
+#: ../../README.rst:36
+msgid "Build and view html"
+msgstr ""
+
+#: ../../README.rst:37
+msgid "In a terminal window, go to the cloned directory."
+msgstr ""
+
+#: ../../README.rst:38
+msgid "``make html``"
+msgstr ""
+
+#: ../../README.rst:39
+msgid "``cd build/html``"
+msgstr ""
+
+#: ../../README.rst:40
+msgid "``open index.html`` (open in web browser)"
+msgstr ""
+
+#: ../../README.rst:41
+msgid ""
+"Tip: each time you run ``make html``, just reload your browser to view "
+"changes"
+msgstr ""
+

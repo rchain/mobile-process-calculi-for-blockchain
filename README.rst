@@ -22,7 +22,10 @@ Install Sphinx, etc
 --------------------------------------------------------------------------------
 For OSX/Linux users (based on instructions here: https://read-the-docs.readthedocs.org/en/latest/getting_started.html)
 
-* From command line: ``sudo pip install sphinx``
+* From command line:
+``sudo pip install sphinx``
+``sudo pip install sphinx-intl``
+``sudo pip install sphinxcontrib-bibtex``
 
 For Windows users:
 
@@ -31,6 +34,23 @@ For Windows users:
 Get source code
 --------------------------------------------------------------------------------
 * git clone: https://github.com/rchain/mobile-process-calculi-for-blockchain.git
+
+How to do the translated
+--------------------------------------------------------------------------------
+If the language you wanna to translate has not been added to the source code. Then you should follow the "Add new language" section to create a new language support files.
+
+If it has been added, then you should use the Poedit(https://poedit.net/download) editor to translate the files in "./locale/<lang>/LC_MESSAGES".
+After finishing translation, just commit your code and create a PR.
+
+Add new language
+--------------------------------------------------------------------------------
+Assume you wanna to add a new language Japanese, then you can find the i18n code of Japanese is 'ja'.
+
+* ``make gettext``
+* ``sphinx-intl update -p _build/gettext -l ja``, then you will get these directories "./locale/ja/LC_MESSAGES/" that contain po files
+* Translate your po files under "./locale/<lang>/LC_MESSAGES/".
+* make -e SPHINXOPTS="-D language='ja'" html
+Then you will get the translated documentation in the _build/html directory.
 
 Build and view html
 --------------------------------------------------------------------------------
