@@ -21,5 +21,5 @@ msgstr ""
 
 #: ../../bibliography.rst:5
 msgid "Bibliography"
-msgstr ""
+msgstr "文献"
 
