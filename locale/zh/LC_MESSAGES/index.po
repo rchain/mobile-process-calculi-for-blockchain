@@ -29,9 +29,9 @@ msgstr ""
 
 #: ../../index.rst:11
 msgid "December 2016"
-msgstr ""
+msgstr "2016.12"
 
 #: ../../index.rst:12
 msgid "Contents:"
-msgstr ""
+msgstr "内容："
 
