@@ -1,0 +1,58 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2016, RChain Co-op
+# This file is distributed under the same license as the Mobile process
+# calculi for programming the blockchain package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Mobile process calculi for programming the "
+"blockchain 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-01-16 22:11+0800\n"
+"PO-Revision-Date: 2018-03-17 12:40+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh\n"
+"X-Generator: Poedit 2.0.5\n"
+
+#: ../../introduction.rst:5
+msgid "Introduction"
+msgstr "介绍"
+
+#: ../../introduction.rst:7
+msgid ""
+"Beginning back in the early '90s with MCC’s ESS and other nascent "
+"efforts a new possibility for the development of distributed and "
+"decentralized applications was emerging. This was a virtual machine "
+"environment, running as a node in a connected network of such VM-based "
+"environments. This idea offered a rich fabric for the development of "
+"decentralized, but coordinated applications that was well suited to the "
+"Internet model of networked applications. The model of application "
+"development that would sit well on top of such a rich environment was a "
+"subject of intensive investigation."
+msgstr ""
+"从90年代早期开始，伴随着MCC的ESS技术以及其他一些新技术的兴起，分布式以及"
+"去中心化应用开始展露头脚。这其中的核心技术是基于虚拟机环境，在一个网络连"
+"通的物理环境中运行节点。这个想法为开发一个适合现有互联网模型的去中心化且"
+"可协调的应用程序提供了丰富的材料。在如此丰富的环境之上，应用程序开发的模"
+"式是一个值得深入研究的课题。"
+
+#: ../../introduction.rst:9
+msgid ""
+"Here we provide a brief, and somewhat idiosyncratic survey of several "
+"lines of investigation that converge to a single model for programming "
+"and deploying decentralized applications. Notably, the model adapts "
+"quite well to the blockchain setting, providing a natural notion of "
+"smart contract. As such, this summary can be taken as the design "
+"rationale for the RChain architecture, and the rholang model of "
+"blockchain-based smart contracts."
+msgstr ""
+"在这里，我们针对于去中心化应用的开发、部署做了一个简单且特殊的调研，并且"
+"基于这些调研结果抽象出了一个单一模型。值得注意的是，这个单一模型很好地适"
+"应了区块链的一些特点，并且包含了有关智能合约的概念。因此，这个总结可以作"
+"为RChain架构的设计原理以及区块链智能合约的rholang模型。"
